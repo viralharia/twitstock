@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'$' + ${ticker} + ' – TwitStock'">Stock – TwitStock</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+
+    <header class="site-header">
+        <a href="/" class="back-link">← Search</a>
+        <h1 th:text="'$' + ${ticker}">$TICK</h1>
+    </header>
+
+    <!-- Error banner -->
+    <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+    <!-- Market data card -->
+    <section class="market-card" th:if="${marketData != null and !marketData.containsKey('error')}">
+        <h2>Market Data</h2>
+        <div class="market-grid">
+            <div class="market-item">
+                <span class="market-label">Price</span>
+                <span class="market-value"
+                      th:text="${marketData['price'] != null ? '$' + #numbers.formatDecimal(marketData['price'], 1, 2) : '–'}">–</span>
+            </div>
+            <div class="market-item">
+                <span class="market-label">Change</span>
+                <span class="market-value"
+                      th:classappend="${marketData['change'] != null and marketData['change'] > 0 ? 'positive' : (marketData['change'] != null and marketData['change'] < 0 ? 'negative' : '')}"
+                      th:text="${marketData['changePercent'] != null ? #numbers.formatDecimal(marketData['changePercent'], 1, 2) + '%' : '–'}">–</span>
+            </div>
+            <div class="market-item">
+                <span class="market-label">52w High</span>
+                <span class="market-value"
+                      th:text="${marketData['fiftyTwoWeekHigh'] != null ? '$' + #numbers.formatDecimal(marketData['fiftyTwoWeekHigh'], 1, 2) : '–'}">–</span>
+            </div>
+            <div class="market-item">
+                <span class="market-label">52w Low</span>
+                <span class="market-value"
+                      th:text="${marketData['fiftyTwoWeekLow'] != null ? '$' + #numbers.formatDecimal(marketData['fiftyTwoWeekLow'], 1, 2) : '–'}">–</span>
+            </div>
+            <div class="market-item">
+                <span class="market-label">Volume</span>
+                <span class="market-value"
+                      th:text="${marketData['volume'] != null ? #numbers.formatInteger(marketData['volume'], 1, 'COMMA') : '–'}">–</span>
+            </div>
+            <div class="market-item">
+                <span class="market-label">Market Cap</span>
+                <span class="market-value"
+                      th:text="${marketData['marketCap'] != null ? '$' + #numbers.formatDecimal(marketData['marketCap'] / 1e9, 1, 2) + 'B' : '–'}">–</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Market data error -->
+    <div class="alert alert-warn"
+         th:if="${marketData != null and marketData.containsKey('error')}"
+         th:text="${marketData['error']}"></div>
+
+    <!-- Ideas table -->
+    <section th:if="${ideas != null and !ideas.isEmpty()}">
+        <h2>Twitter Ideas for <span th:text="'$' + ${ticker}">$TICK</span></h2>
+        <table class="ideas-table">
+            <thead>
+            <tr>
+                <th>User</th>
+                <th>Sentiment</th>
+                <th>Score</th>
+                <th>Tweets</th>
+                <th>Likes</th>
+                <th>First Seen</th>
+                <th>Last Seen</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="idea : ${ideas}">
+                <td>
+                    <a th:href="@{/analyze(username=${idea.username})}" th:text="'@' + ${idea.username}">@user</a>
+                </td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${idea.sentiment == T(com.example.twitstock.model.Sentiment).BULLISH} ? 'badge-bull' : (${idea.sentiment == T(com.example.twitstock.model.Sentiment).BEARISH} ? 'badge-bear' : 'badge-neutral')"
+                          th:text="${idea.sentiment}">NEUTRAL</span>
+                </td>
+                <td th:text="${#numbers.formatDecimal(idea.score, 1, 3)}">0.000</td>
+                <td th:text="${idea.tweetCount}">0</td>
+                <td th:text="${idea.totalLikes}">0</td>
+                <td th:text="${idea.firstSeen != null ? #temporals.format(idea.firstSeen, 'yyyy-MM-dd') : '–'}">–</td>
+                <td th:text="${idea.lastSeen  != null ? #temporals.format(idea.lastSeen,  'yyyy-MM-dd') : '–'}">–</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <p th:if="${ideas == null or ideas.isEmpty()}" class="empty-state">
+        No Twitter ideas found for <span th:text="'$' + ${ticker}">$TICK</span> yet.
+        <a href="/">Search for a user</a> to populate ideas.
+    </p>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'$' + ${ticker} + ' Users – TwitStock'">Ticker Users – TwitStock</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+
+    <header class="site-header">
+        <a th:href="@{/stock/{t}(t=${ticker})}" class="back-link">← <span th:text="'$' + ${ticker}">$TICK</span></a>
+        <h1>Users mentioning <span th:text="'$' + ${ticker}">$TICK</span></h1>
+    </header>
+
+    <!-- Error banner -->
+    <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+    <main>
+        <section th:if="${userRows != null and !userRows.isEmpty()}">
+            <table class="ideas-table">
+                <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Ideas</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="row : ${userRows}">
+                    <td th:text="'@' + ${row['username']}">@user</td>
+                    <td th:text="${row['ideaCount']}">0</td>
+                    <td>
+                        <a th:href="@{/analyze(username=${row['username']})}" class="link-small">View analysis</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <p th:if="${userRows == null or userRows.isEmpty()}" class="empty-state">
+            No users found for <span th:text="'$' + ${ticker}">$TICK</span>.
+            <a href="/">Search for a user</a> to populate data.
+        </p>
+    </main>
+
+</div>
+</body>
+</html>

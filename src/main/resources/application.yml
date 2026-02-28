@@ -1,0 +1,18 @@
+spring:
+  thymeleaf:
+    cache: false
+
+twitstock:
+  twitter-scraper:
+    base-url: ${TWITSTOCK_TWITTER_SCRAPER_BASE_URL:http://localhost:3000}
+    timeout-seconds: ${TWITSTOCK_TWITTER_SCRAPER_TIMEOUT:10}
+    max-tweets: ${TWITSTOCK_MAX_TWEETS:100}
+  market-data:
+    base-url: ${TWITSTOCK_MARKET_DATA_BASE_URL:https://query1.finance.yahoo.com}
+    timeout-seconds: ${TWITSTOCK_MARKET_DATA_TIMEOUT:8}
+  max-ideas-per-user: ${TWITSTOCK_MAX_IDEAS:20}
+  idea-window-days: ${TWITSTOCK_IDEA_WINDOW_DAYS:90}
+
+logging:
+  level:
+    com.example.twitstock: DEBUG
