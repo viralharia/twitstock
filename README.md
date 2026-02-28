@@ -1,151 +1,126 @@
 # TwitStock
 
-A Spring Boot web application that analyzes Twitter users' stock-picking ideas and tracks
-their performance against real market data.
+Analyze Twitter (X) users' stock ideas and their historical performance.
+
+Enter a Twitter username and a date range — TwitStock fetches the user's tweets,
+extracts stock tickers mentioned in them, then looks up the historical price for
+each stock at tweet time and compares it to the current price to show profit/loss.
 
 ---
 
-## What It Does
+## Tech Stack
 
-1. **Search a Twitter user** – Enter any Twitter/X handle.
-2. **Detect stock tickers** – The app scans their recent tweets for cashtags (`$AAPL`, `$TSLA`, …)
-   and plain ticker symbols, then groups them into *ideas*.
-3. **Score each idea** – Using sentiment analysis and a configurable scoring model, each idea
-   gets a bull/bear/neutral rating plus a confidence score.
-4. **Fetch market data** – Current price, 52-week high/low, and price-change % are pulled from
-   Yahoo Finance (no API key required).
-5. **Browse by ticker** – See all Twitter users who have mentioned a specific stock and how
-   their ideas performed.
-
----
-
-## Architecture
-
-```
-twitstock/
-├── pom.xml
-└── src/main/
-    ├── java/com/example/twitstock/
-    │   ├── TwitStockApplication.java          # Spring Boot entry point
-    │   ├── config/
-    │   │   ├── MarketDataProperties.java      # market-data config binding
-    │   │   ├── TwitStockProperties.java       # top-level config binding
-    │   │   ├── TwitterScraperProperties.java  # twitter-scraper config binding
-    │   │   └── WebClientConfig.java           # WebClient beans
-    │   ├── controller/
-    │   │   └── TwitStockController.java       # MVC endpoints
-    │   ├── client/
-    │   │   ├── TwitterClient.java             # interface
-    │   │   ├── ExternalScraperTwitterClient.java  # calls external scraper API
-    │   │   ├── MarketDataClient.java          # interface
-    │   │   └── YahooFinanceClient.java        # Yahoo Finance via WebClient
-    │   ├── service/
-    │   │   ├── TickerDetector.java            # cashtag + symbol extraction
-    │   │   ├── IdeaEngine.java                # groups tweets → ideas, scores them
-    │   │   ├── AnalyticsService.java          # cross-user ticker analytics
-    │   │   └── AnalysisService.java           # orchestrates the full analysis
-    │   └── model/
-    │       ├── Sentiment.java
-    │       ├── IdeaStatus.java
-    │       ├── TweetDto.java
-    │       ├── Idea.java
-    │       ├── UserAnalysis.java
-    │       └── AnalyzeRequest.java
-    └── resources/
-        ├── application.yml
-        ├── templates/
-        │   ├── search.html          # home / search page
-        │   ├── user-overview.html   # per-user idea list
-        │   ├── stock-detail.html    # per-stock detail
-        │   └── ticker-users.html   # all users for a ticker
-        └── static/css/
-            └── style.css
-```
+| Layer | Technology |
+|---|---|
+| Backend | Java 17, Spring Boot 3, WebFlux (WebClient) |
+| Frontend | Thymeleaf, Bootstrap 5 |
+| Twitter data | [twitterapi.io](https://twitterapi.io) Advanced Search |
+| Stock data | [Twelve Data](https://twelvedata.com) |
 
 ---
 
 ## Prerequisites
 
-| Tool | Version |
-|------|---------|
-| Java | 17 + |
-| Maven | 3.9 + |
-| Twitter scraper | Any HTTP endpoint that returns tweet JSON (see below) |
+- **Java 17+**
+- **Maven 3.8+**
+- A **twitterapi.io API key** — sign up at <https://twitterapi.io>
+- A **Twelve Data API key** — sign up at <https://twelvedata.com>
 
 ---
 
-## Configuration
+## Quick Start
 
-All settings live in `src/main/resources/application.yml`.
-
-```yaml
-twitstock:
-  twitter-scraper:
-    base-url: http://localhost:3000   # URL of your Twitter scraper service
-    timeout-seconds: 10
-    max-tweets: 100
-  market-data:
-    base-url: https://query1.finance.yahoo.com
-    timeout-seconds: 8
-  analysis:
-    max-ideas-per-user: 20
-    idea-window-days: 90
-```
-
-### Twitter Scraper Contract
-
-The app calls:
-
-```
-GET {base-url}/tweets/{username}?limit={maxTweets}
-```
-
-Expected response — a JSON array of tweet objects:
-
-```json
-[
-  {
-    "id": "1234567890",
-    "text": "Bullish on $AAPL here, strong earnings beat",
-    "created_at": "2024-01-15T14:30:00Z",
-    "like_count": 42,
-    "retweet_count": 12,
-    "reply_count": 5
-  }
-]
-```
-
-Any scraper (open-source or self-hosted) that satisfies this contract will work.
-
----
-
-## Running Locally
+### 1. Clone the repo
 
 ```bash
-# 1. Clone
 git clone https://github.com/viralharia/twitstock.git
 cd twitstock
-
-# 2. (Optional) override scraper URL
-export TWITSTOCK_TWITTER_SCRAPER_BASE_URL=http://localhost:3000
-
-# 3. Build & run
-mvn spring-boot:run
-
-# 4. Open browser
-open http://localhost:8080
 ```
+
+### 2. Set your API keys
+
+You can provide the keys via environment variables (recommended) or by editing
+`src/main/resources/application.yml` directly.
+
+**Environment variables (recommended)**
+
+```bash
+export TWITTER_SCRAPER_API_KEY="your_twitterapi_io_key"
+export TWELVEDATA_API_KEY="your_twelve_data_key"
+```
+
+**Or edit `application.yml`**
+
+```yaml
+twitter:
+  scraper:
+    api-key: "your_twitterapi_io_key"
+
+twelvedata:
+  api:
+    key: "your_twelve_data_key"
+```
+
+### 3. Build & run
+
+```bash
+mvn spring-boot:run
+```
+
+Then open <http://localhost:8080> in your browser.
 
 ---
 
-## Endpoints
+## Configuration Reference
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/` | Search page |
-| `GET` | `/analyze?username={handle}` | Analyze a Twitter user |
-| `GET` | `/stock/{ticker}` | Detail page for one ticker |
-| `GET` | `/ticker/{ticker}/users` | All users mentioning a ticker |
+All settings live under `src/main/resources/application.yml`.
+
+| Property | Env var | Default | Description |
+|---|---|---|---|
+| `twitter.scraper.api-key` | `TWITTER_SCRAPER_API_KEY` | _(empty)_ | Your twitterapi.io API key |
+| `twitter.scraper.base-url` | — | `https://api.twitterapi.io` | Base URL for twitterapi.io |
+| `twitter.scraper.max-pages` | — | `5` | Max pagination pages per fetch (≈100 tweets) |
+| `twelvedata.api.key` | `TWELVEDATA_API_KEY` | _(empty)_ | Your Twelve Data API key |
+
+---
+
+## How It Works
+
+1. **Tweet fetch** — `ExternalScraperTwitterClient` calls the twitterapi.io
+   `GET /twitter/tweet/advanced_search` endpoint with a query like:
+   ```
+   from:elonmusk since:2024-01-01 until:2024-04-01 -is:reply -is:retweet
+   ```
+   Server-side operators handle date filtering and reply/retweet exclusion.
+   Cursor-based pagination collects up to `max-pages × 20` tweets.
+
+2. **Ticker extraction** — A regex scans each tweet's text for `$TICKER` patterns
+   (e.g. `$AAPL`, `$TSLA`).
+
+3. **Price lookup** — For each (ticker, tweet-date) pair, Twelve Data's
+   `/time_series` endpoint returns the closing price on that date.
+
+4. **P&L calculation** — The app compares the tweet-date price to today's price
+   and shows the gain/loss percentage.
+
+---
+
+## Project Structure
+
+```
+src/main/java/com/example/twitstock/
+├── client/
+│   ├── TwitterClient.java                 # Interface
+│   └── ExternalScraperTwitterClient.java  # twitterapi.io implementation
+├── config/
+│   └── TwitterScraperProperties.java      # Bound from application.yml
+├── model/
+│   └── TweetDto.java                      # Tweet data transfer object
+├── service/
+│   └── TweetAnalysisService.java          # Orchestrates fetch → extract → price
+└── controller/
+    └── AnalysisController.java            # Spring MVC controller
+```
 
 ---
 

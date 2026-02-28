@@ -1,42 +1,58 @@
 package com.example.twitstock.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.time.Instant;
+import java.time.ZonedDateTime;
 
 /**
- * Lightweight DTO that maps a single tweet from the external scraper's JSON
- * response.
+ * Represents a single tweet returned by the Twitter data provider.
  *
- * <p>Field names follow the snake_case convention used by most scraper APIs;
- * Jackson's {@code @JsonProperty} annotations handle the mapping to camelCase
- * Java fields.
+ * <p>Fields {@code isReply} and {@code isRetweet} are populated from the
+ * twitterapi.io response metadata and are used as a safety filter on top of
+ * the server-side {@code -is:reply -is:retweet} query operators.</p>
  */
-@Data
-@NoArgsConstructor
 public class TweetDto {
 
-    /** Platform-assigned tweet ID. */
     private String id;
-
-    /** Full text of the tweet. */
     private String text;
+    private ZonedDateTime createdAt;
+    private String author;
 
-    /** UTC timestamp when the tweet was posted. */
-    @JsonProperty("created_at")
-    private Instant createdAt;
+    // Engagement
+    private int likes;
+    private int retweets;
+    private int replies;
 
-    /** Number of likes (hearts) the tweet has received. */
-    @JsonProperty("like_count")
-    private long likeCount;
+    // Safety-filter flags (from twitterapi.io response metadata)
+    private boolean isReply;
+    private boolean isRetweet;
 
-    /** Number of retweets. */
-    @JsonProperty("retweet_count")
-    private long retweetCount;
+    // -------------------------------------------------------------------------
+    // Getters & Setters
+    // -------------------------------------------------------------------------
 
-    /** Number of replies. */
-    @JsonProperty("reply_count")
-    private long replyCount;
+    public String getId()                    { return id; }
+    public void setId(String id)             { this.id = id; }
+
+    public String getText()                  { return text; }
+    public void setText(String text)         { this.text = text; }
+
+    public ZonedDateTime getCreatedAt()      { return createdAt; }
+    public void setCreatedAt(ZonedDateTime c){ this.createdAt = c; }
+
+    public String getAuthor()                { return author; }
+    public void setAuthor(String author)     { this.author = author; }
+
+    public int getLikes()                    { return likes; }
+    public void setLikes(int likes)          { this.likes = likes; }
+
+    public int getRetweets()                 { return retweets; }
+    public void setRetweets(int retweets)    { this.retweets = retweets; }
+
+    public int getReplies()                  { return replies; }
+    public void setReplies(int replies)      { this.replies = replies; }
+
+    public boolean isIsReply()               { return isReply; }
+    public void setIsReply(boolean isReply)  { this.isReply = isReply; }
+
+    public boolean isIsRetweet()             { return isRetweet; }
+    public void setIsRetweet(boolean v)      { this.isRetweet = v; }
 }

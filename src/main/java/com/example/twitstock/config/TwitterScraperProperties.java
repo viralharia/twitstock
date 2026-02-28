@@ -1,38 +1,46 @@
 package com.example.twitstock.config;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 /**
- * Binds to twitstock.twitter-scraper.* in application.yml
+ * Externalized configuration for the twitterapi.io client.
+ *
+ * <p>Bound from the {@code twitter.scraper} prefix in {@code application.yml}.</p>
+ *
+ * <h3>Required properties</h3>
+ * <ul>
+ *   <li>{@code twitter.scraper.api-key} — your twitterapi.io API key</li>
+ *   <li>{@code twitter.scraper.base-url} — API base URL (default: https://api.twitterapi.io)</li>
+ *   <li>{@code twitter.scraper.max-pages} — max pagination pages per request (default: 5)</li>
+ * </ul>
  */
-@Data
-@Validated
+@Component
+@ConfigurationProperties(prefix = "twitter.scraper")
 public class TwitterScraperProperties {
 
-    /** Base URL of the external Twitter / X scraper service. */
-    @NotBlank
-    private String baseUrl = "http://localhost:3000";
+    /** twitterapi.io API key — sent as the {@code X-API-Key} request header. */
+    private String apiKey = "";
 
-    /** HTTP timeout in seconds for scraper calls. */
-    @Min(1)
-    private int timeoutSeconds = 10;
-
-    /** Maximum number of tweets to fetch per user. */
-    @Min(1)
-    private int maxTweets = 100;
-
-    // ------------------------------------------------------------------ //
-    //  Computed helpers (not bound from config)                            //
-    // ------------------------------------------------------------------ //
+    /** Base URL for the twitterapi.io REST API. */
+    private String baseUrl = "https://api.twitterapi.io";
 
     /**
-     * Returns the tweets endpoint for the given username.
-     * e.g. {@code /tweets/elonmusk?limit=100}
+     * Maximum number of pagination pages to fetch per {@code fetchTweets} call.
+     * Each page returns up to 20 tweets. Raise this for longer date windows.
      */
-    public String tweetsPath(String username) {
-        return "/tweets/" + username + "?limit=" + maxTweets;
-    }
+    private int maxPages = 5;
+
+    // -------------------------------------------------------------------------
+    // Getters & Setters
+    // -------------------------------------------------------------------------
+
+    public String getApiKey()              { return apiKey; }
+    public void setApiKey(String apiKey)   { this.apiKey = apiKey; }
+
+    public String getBaseUrl()             { return baseUrl; }
+    public void setBaseUrl(String baseUrl) { this.baseUrl = baseUrl; }
+
+    public int getMaxPages()               { return maxPages; }
+    public void setMaxPages(int maxPages)  { this.maxPages = maxPages; }
 }

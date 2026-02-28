@@ -1,18 +1,38 @@
+server:
+  port: 8080
+
 spring:
   thymeleaf:
-    cache: false
+    cache: false          # Disable caching during local development
 
-twitstock:
-  twitter-scraper:
-    base-url: ${TWITSTOCK_TWITTER_SCRAPER_BASE_URL:http://localhost:3000}
-    timeout-seconds: ${TWITSTOCK_TWITTER_SCRAPER_TIMEOUT:10}
-    max-tweets: ${TWITSTOCK_MAX_TWEETS:100}
-  market-data:
-    base-url: ${TWITSTOCK_MARKET_DATA_BASE_URL:https://query1.finance.yahoo.com}
-    timeout-seconds: ${TWITSTOCK_MARKET_DATA_TIMEOUT:8}
-  max-ideas-per-user: ${TWITSTOCK_MAX_IDEAS:20}
-  idea-window-days: ${TWITSTOCK_IDEA_WINDOW_DAYS:90}
+# ---------------------------------------------------------------------------
+# Twitter data provider — twitterapi.io
+# ---------------------------------------------------------------------------
+twitter:
+  scraper:
+    # Your twitterapi.io API key.
+    # Override via environment variable:  TWITTER_SCRAPER_API_KEY=<your-key>
+    api-key: "${TWITTER_SCRAPER_API_KEY:}"
 
+    # Base URL for the twitterapi.io REST API.
+    base-url: "https://api.twitterapi.io"
+
+    # Maximum number of pagination pages to fetch per request.
+    # Each page returns up to 20 tweets. Raise for longer date windows.
+    max-pages: 5
+
+# ---------------------------------------------------------------------------
+# Stock price provider — Twelve Data
+# ---------------------------------------------------------------------------
+twelvedata:
+  api:
+    # Your Twelve Data API key.
+    # Override via environment variable:  TWELVEDATA_API_KEY=<your-key>
+    key: "${TWELVEDATA_API_KEY:}"
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
 logging:
   level:
     com.example.twitstock: DEBUG
